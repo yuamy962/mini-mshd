@@ -1,7 +1,12 @@
 <view class="container">
-  <!-- 顶部提示 -->
-  <view class="top-tip">
-    <text class="tip-text">今日剩余免费次数：{{remaining}} 次</text>
+  <!-- 顶部栏：次数 + 历史记录入口 -->
+  <view class="top-bar">
+    <view class="top-tip">
+      <text class="tip-text">今日剩余：{{remaining}} 次</text>
+    </view>
+    <view class="history-link" bindtap="onGoHistory">
+      <text>历史记录 ></text>
+    </view>
   </view>
 
   <!-- 岗位选择 -->

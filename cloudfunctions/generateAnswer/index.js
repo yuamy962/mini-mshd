@@ -9,7 +9,7 @@ const db = cloud.database();
 const MAX_DAILY_QUOTA = 3;
 
 /**
- * 构建 Prompt
+ * 构建 Prompt（v1.1 增加评分和推荐问题）
  */
 function buildPrompt(role, question, background) {
   return `你是一位资深HR和面试教练。
@@ -30,8 +30,29 @@ function buildPrompt(role, question, background) {
   "answer": "面试回答（标准版）",
   "advanced": "加分表达（更高级一点）",
   "insight": "面试官在想什么（评估维度：稳定性、逻辑能力、可培养性）",
-  "followup": "可能的追问 + 建议回答"
+  "followup": "可能的追问 + 建议回答",
+  "score": {
+    "total": 85,
+    "clarity": 88,
+    "logic": 82,
+    "authenticity": 86,
+    "target": 92,
+    "suggestion": "具体优化建议"
+  },
+  "recommendQuestions": ["自我介绍", "优缺点", "职业规划"]
 }
+
+评分规则（score）：
+- total: 总分 0-100
+- clarity: 表达清晰度 0-100
+- logic: 逻辑结构 0-100
+- authenticity: 真实感 0-100
+- target: 优化后可达分数
+- suggestion: 一句话优化建议
+
+推荐问题规则（recommendQuestions）：
+- 根据岗位和问题，推荐3个最可能被追问的相关问题
+- 用中文短语，每个不超过8个字
 
 风格：
 - 不要空话
@@ -178,6 +199,10 @@ exports.main = async (event, context) => {
     // 3. 保存记录
     await saveUsage(openid, role, question, background, aiResult);
 
+    // 4. 组装返回数据
+    const score = aiResult.score || {};
+    const recommendQuestions = aiResult.recommendQuestions || [];
+
     return {
       code: 0,
       message: 'success',
@@ -187,11 +212,19 @@ exports.main = async (event, context) => {
         advanced: aiResult.advanced || '',
         insight: aiResult.insight || '',
         followup: aiResult.followup || '',
+        score: {
+          total: score.total || 0,
+          clarity: score.clarity || 0,
+          logic: score.logic || 0,
+          authenticity: score.authenticity || 0,
+          target: score.target || 0,
+          suggestion: score.suggestion || '',
+        },
+        recommendQuestions: Array.isArray(recommendQuestions) ? recommendQuestions : [],
       },
     };
   } catch (e) {
     console.error('生成失败:', e);
-    // 发生异常时，回退次数（简单处理：直接减回，实际生产环境需要事务）
     return {
       code: -1,
       message: e.message || '生成失败，请稍后重试',

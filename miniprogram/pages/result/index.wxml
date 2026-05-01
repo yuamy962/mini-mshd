@@ -22,6 +22,46 @@
       <view class="header-subtitle">建议直接背诵，面试时用得上</view>
     </view>
 
+    <!-- 评分模块 -->
+    <view class="card card-score" wx:if="{{result.score && result.score.total}}">
+      <view class="card-title">
+        <text class="icon">📊</text>
+        <text>你的回答评分</text>
+      </view>
+      <view class="score-main">
+        <view class="score-circle">
+          <text class="score-num">{{result.score.total}}</text>
+          <text class="score-label">分</text>
+        </view>
+        <view class="score-detail">
+          <view class="score-item">
+            <text class="score-item-label">表达清晰度</text>
+            <view class="score-bar-bg">
+              <view class="score-bar-fill" style="width: {{result.score.clarity}}%;"></view>
+            </view>
+            <text class="score-item-val">{{result.score.clarity}}</text>
+          </view>
+          <view class="score-item">
+            <text class="score-item-label">逻辑结构</text>
+            <view class="score-bar-bg">
+              <view class="score-bar-fill" style="width: {{result.score.logic}}%;"></view>
+            </view>
+            <text class="score-item-val">{{result.score.logic}}</text>
+          </view>
+          <view class="score-item">
+            <text class="score-item-label">真实感</text>
+            <view class="score-bar-bg">
+              <view class="score-bar-fill" style="width: {{result.score.authenticity}}%;"></view>
+            </view>
+            <text class="score-item-val">{{result.score.authenticity}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="score-suggestion" wx:if="{{result.score.suggestion}}">
+        💡 {{result.score.suggestion}}，优化后可提升到 {{result.score.target}}+ 分
+      </view>
+    </view>
+
     <!-- 标准回答 -->
     <view class="card card-answer">
       <view class="card-title">
@@ -43,31 +83,111 @@
       <view class="card-content">{{result.insight}}</view>
     </view>
 
-    <!-- 高级表达 -->
+    <!-- 高级表达（v1.2 增加锁定） -->
     <view class="card card-advanced" wx:if="{{result.advanced}}">
       <view class="card-title">
         <text class="icon">✨</text>
         <text>更高级的表达方式</text>
       </view>
-      <view class="card-content">{{result.advanced}}</view>
-      <view class="copy-btn" data-text="{{result.advanced}}" bindtap="onCopyText">
+      <view class="card-content {{!unlockedAdvanced ? 'content-locked' : ''}}">
+        {{result.advanced}}
+      </view>
+      <!-- 锁定遮罩 -->
+      <view class="lock-overlay" wx:if="{{!unlockedAdvanced}}">
+        <view class="lock-mask"></view>
+        <view class="lock-btn" data-type="advanced" bindtap="onShowUnlockModal">
+          <text class="lock-icon">🔒</text>
+          <text>查看完整版</text>
+        </view>
+      </view>
+      <view class="copy-btn" wx:if="{{unlockedAdvanced}}" data-text="{{result.advanced}}" bindtap="onCopyText">
         复制高级表达
       </view>
     </view>
 
-    <!-- 追问 -->
+    <!-- 追问（v1.2 增加锁定） -->
     <view class="card card-followup" wx:if="{{result.followup}}">
       <view class="card-title">
         <text class="icon">👉</text>
         <text>可能追问 & 应对</text>
       </view>
-      <view class="card-content">{{result.followup}}</view>
+      <view class="card-content {{!unlockedFollowup ? 'content-locked' : ''}}">
+        {{result.followup}}
+      </view>
+      <!-- 锁定遮罩 -->
+      <view class="lock-overlay" wx:if="{{!unlockedFollowup}}">
+        <view class="lock-mask"></view>
+        <view class="lock-btn" data-type="followup" bindtap="onShowUnlockModal">
+          <text class="lock-icon">🔒</text>
+          <text>查看完整版</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 推荐问题 -->
+    <view class="card card-recommend" wx:if="{{result.recommendQuestions && result.recommendQuestions.length > 0}}">
+      <view class="card-title">
+        <text class="icon">💬</text>
+        <text>你可能还会被问</text>
+      </view>
+      <view class="recommend-list">
+        <view
+          class="recommend-item"
+          wx:for="{{result.recommendQuestions}}"
+          wx:key="*this"
+          data-text="{{item}}"
+          bindtap="onRecommendQuestion"
+        >
+          {{item}}
+        </view>
+      </view>
     </view>
 
     <!-- 底部操作 -->
     <view class="bottom-action">
+      <button class="btn-share" bindtap="onShowShareModal">📸 生成分享卡片</button>
       <button class="btn-primary" bindtap="onRegenerate">再生成一个</button>
       <button class="btn-secondary" open-type="share">分享给朋友</button>
     </view>
   </block>
+</view>
+
+<!-- ===== 分享卡片弹窗（v1.2） ===== -->
+<view class="modal-mask" wx:if="{{showShareModal}}" bindtap="onCloseShareModal"></view>
+<view class="share-modal" wx:if="{{showShareModal}}">
+  <view class="modal-header">
+    <text class="modal-title">生成分享卡片</text>
+    <text class="modal-close" bindtap="onCloseShareModal">✕</text>
+  </view>
+  <view class="modal-body">
+    <canvas canvas-id="shareCanvas" style="width: 750rpx; height: 1100rpx; margin: 0 auto; display: block;"></canvas>
+    <image wx:if="{{shareImagePath}}" src="{{shareImagePath}}" mode="widthFix" style="width: 750rpx; height: 1100rpx; display: block; margin: 0 auto; border-radius: 16rpx; box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.15);" />
+  </view>
+  <view class="modal-footer">
+    <button class="btn-save" bindtap="onSaveShareImage" disabled="{{!shareImagePath}}">
+      {{shareImagePath ? '保存到相册' : '生成中...'}}
+    </button>
+  </view>
+</view>
+
+<!-- ===== 解锁弹窗（v1.2） ===== -->
+<view class="modal-mask" wx:if="{{showUnlockModal}}" bindtap="onCloseUnlockModal"></view>
+<view class="unlock-modal" wx:if="{{showUnlockModal}}">
+  <view class="unlock-icon">🔓</view>
+  <view class="unlock-title">解锁完整版</view>
+  <view class="unlock-desc">
+    开通即可查看高级表达和追问应对的完整内容
+  </view>
+  <view class="unlock-benefits">
+    <view class="benefit-item">✅ 高级表达完整版</view>
+    <view class="benefit-item">✅ 追问应对完整版</view>
+    <view class="benefit-item">✅ 无限次生成</view>
+  </view>
+  <button class="btn-unlock-ad" bindtap="onUnlockByAd">
+    🎬 观看广告免费解锁
+  </button>
+  <button class="btn-unlock-vip" bindtap="onUnlockFree">
+    🎁 免费体验（测试）
+  </button>
+  <view class="unlock-close" bindtap="onCloseUnlockModal">稍后再说</view>
 </view>

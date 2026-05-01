@@ -1,0 +1,40 @@
+<view class="container">
+  <!-- 空状态 -->
+  <block wx:if="{{!loading && list.length === 0}}">
+    <view class="empty-box">
+      <view class="empty-text">暂无历史记录</view>
+      <view class="empty-sub">去生成你的第一份面试回答吧~</view>
+      <button class="btn-primary" bindtap="onGoHome">去生成</button>
+    </view>
+  </block>
+
+  <!-- 列表 -->
+  <block wx:else>
+    <view class="history-list">
+      <view
+        class="history-item"
+        wx:for="{{list}}"
+        wx:key="_id"
+        data-index="{{index}}"
+        bindtap="onViewDetail"
+      >
+        <view class="item-header">
+          <view class="item-role">{{item.role}}</view>
+          <view class="item-time">{{item.dateStr}} {{item.timeStr}}</view>
+        </view>
+        <view class="item-question">{{item.question}}</view>
+        <view class="item-preview" wx:if="{{item.result && item.result.answer}}">
+          {{item.result.answer}}
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{hasMore && !loading}}" bindtap="onLoadMore">
+      <text>点击加载更多</text>
+    </view>
+    <view class="load-more" wx:if="{{!hasMore && list.length > 0}}">
+      <text>没有更多了</text>
+    </view>
+  </block>
+</view>

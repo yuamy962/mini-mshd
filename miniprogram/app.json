@@ -1,7 +1,8 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/result/index"
+    "pages/result/index",
+    "pages/history/index"
   ],
   "window": {
     "backgroundColor": "#F5F7FA",

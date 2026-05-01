@@ -7,19 +7,34 @@ page {
   padding: 30rpx;
 }
 
-/* 顶部提示 */
+/* 顶部栏 */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
 .top-tip {
   background: #fff3e0;
   border-radius: 16rpx;
-  padding: 20rpx 30rpx;
-  margin-bottom: 30rpx;
-  text-align: center;
+  padding: 16rpx 30rpx;
 }
 
 .tip-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #e65100;
   font-weight: 500;
+}
+
+.history-link {
+  font-size: 28rpx;
+  color: #07c160;
+  padding: 16rpx 20rpx;
+}
+
+.history-link:active {
+  opacity: 0.7;
 }
 
 /* 区块通用 */

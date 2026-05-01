@@ -1,0 +1,115 @@
+/* 历史记录页样式 */
+page {
+  background-color: #f5f7fa;
+}
+
+.container {
+  padding: 30rpx;
+}
+
+/* 空状态 */
+.empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 60rpx;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 36rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+}
+
+.empty-sub {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 40rpx;
+}
+
+.btn-primary {
+  width: 300rpx;
+  height: 90rpx;
+  line-height: 90rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 30rpx;
+  border-radius: 45rpx;
+  text-align: center;
+  border: none;
+}
+
+.btn-primary::after {
+  border: none;
+}
+
+.btn-primary:active {
+  opacity: 0.85;
+}
+
+/* 列表 */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.history-item {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
+}
+
+.history-item:active {
+  opacity: 0.85;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.item-role {
+  font-size: 28rpx;
+  color: #07c160;
+  font-weight: 500;
+  background: #e8f5e9;
+  padding: 6rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.item-time {
+  font-size: 24rpx;
+  color: #bbb;
+}
+
+.item-question {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+  line-height: 1.4;
+}
+
+.item-preview {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 加载更多 */
+.load-more {
+  text-align: center;
+  padding: 40rpx 0;
+  font-size: 26rpx;
+  color: #999;
+}

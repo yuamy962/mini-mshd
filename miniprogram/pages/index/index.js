@@ -70,7 +70,6 @@ Page({
     this.setData({ loading: true });
 
     try {
-      // 先检查次数
       const checkRes = await wx.cloud.callFunction({
         name: 'quota',
         data: { type: 'check' },
@@ -82,7 +81,6 @@ Page({
         return;
       }
 
-      // 跳转到结果页
       const { background } = this.data;
       const url = `/pages/result/index?role=${encodeURIComponent(selectedRole)}&question=${encodeURIComponent(question)}&background=${encodeURIComponent(background)}`;
       wx.navigateTo({ url });
@@ -92,6 +90,12 @@ Page({
     } finally {
       this.setData({ loading: false });
     }
+  },
+
+  onGoHistory() {
+    wx.navigateTo({
+      url: '/pages/history/index',
+    });
   },
 
   onShareAppMessage() {
