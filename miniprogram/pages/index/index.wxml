@@ -1,0 +1,70 @@
+<view class="container">
+  <!-- 顶部提示 -->
+  <view class="top-tip">
+    <text class="tip-text">今日剩余免费次数：{{remaining}} 次</text>
+  </view>
+
+  <!-- 岗位选择 -->
+  <view class="section">
+    <view class="section-title">1️⃣ 选择你的岗位（必填）</view>
+    <view class="role-list">
+      <view
+        class="role-item {{selectedRole === item ? 'active' : ''}}"
+        wx:for="{{roles}}"
+        wx:key="*this"
+        data-role="{{item}}"
+        bindtap="onSelectRole"
+      >
+        {{item}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 面试问题 -->
+  <view class="section">
+    <view class="section-title">2️⃣ 面试问题（必填）</view>
+    <textarea
+      class="question-input"
+      placeholder="例如：你的优点是什么？"
+      value="{{question}}"
+      bindinput="onQuestionInput"
+      maxlength="200"
+    />
+    <view class="quick-tags">
+      <text class="quick-label">常见问题：</text>
+      <view
+        class="quick-item"
+        wx:for="{{quickQuestions}}"
+        wx:key="*this"
+        data-text="{{item}}"
+        bindtap="onQuickQuestion"
+      >
+        {{item}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 个人背景 -->
+  <view class="section">
+    <view class="section-title">3️⃣ 个人背景（选填）</view>
+    <textarea
+      class="bg-input"
+      placeholder="示例：应届计算机专业，有2个项目经验"
+      value="{{background}}"
+      bindinput="onBackgroundInput"
+      maxlength="200"
+    />
+  </view>
+
+  <!-- 生成按钮 -->
+  <view class="action-area">
+    <button
+      class="generate-btn {{loading ? 'disabled' : ''}}"
+      bindtap="onGenerate"
+      disabled="{{loading}}"
+    >
+      {{loading ? '生成中...' : '一键生成回答'}}
+    </button>
+    <view class="sub-tip">AI 生成，真实自然，可直接使用</view>
+  </view>
+</view>

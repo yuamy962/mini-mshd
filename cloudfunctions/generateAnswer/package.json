@@ -1,0 +1,13 @@
+{
+  "name": "generateAnswer",
+  "version": "1.0.0",
+  "description": "AI生成面试回答",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0",
+    "axios": "^1.6.0"
+  }
+}

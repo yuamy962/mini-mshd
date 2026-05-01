@@ -1,0 +1,73 @@
+<view class="container">
+  <!-- 加载中 -->
+  <block wx:if="{{loading}}">
+    <view class="loading-box">
+      <view class="loading-text">AI 正在生成回答，请稍候...</view>
+    </view>
+  </block>
+
+  <!-- 错误提示 -->
+  <block wx:elif="{{errorMsg}}">
+    <view class="card" style="text-align:center; padding: 80rpx 30rpx;">
+      <view style="font-size:32rpx; color:#666; margin-bottom:30rpx;">{{errorMsg}}</view>
+      <button class="btn-primary" bindtap="onRegenerate">返回首页</button>
+    </view>
+  </block>
+
+  <!-- 结果展示 -->
+  <block wx:else>
+    <!-- 头部 -->
+    <view class="header">
+      <view class="header-title">🔥 HR会点头的回答</view>
+      <view class="header-subtitle">建议直接背诵，面试时用得上</view>
+    </view>
+
+    <!-- 标准回答 -->
+    <view class="card card-answer">
+      <view class="card-title">
+        <text class="icon">📝</text>
+        <text>面试回答（标准版）</text>
+      </view>
+      <view class="card-content">{{result.answer}}</view>
+      <view class="copy-btn" data-text="{{result.answer}}" bindtap="onCopyText">
+        复制回答
+      </view>
+    </view>
+
+    <!-- 面试官视角 -->
+    <view class="card card-insight" wx:if="{{result.insight}}">
+      <view class="card-title">
+        <text class="icon">🧠</text>
+        <text>面试官在想什么</text>
+      </view>
+      <view class="card-content">{{result.insight}}</view>
+    </view>
+
+    <!-- 高级表达 -->
+    <view class="card card-advanced" wx:if="{{result.advanced}}">
+      <view class="card-title">
+        <text class="icon">✨</text>
+        <text>更高级的表达方式</text>
+      </view>
+      <view class="card-content">{{result.advanced}}</view>
+      <view class="copy-btn" data-text="{{result.advanced}}" bindtap="onCopyText">
+        复制高级表达
+      </view>
+    </view>
+
+    <!-- 追问 -->
+    <view class="card card-followup" wx:if="{{result.followup}}">
+      <view class="card-title">
+        <text class="icon">👉</text>
+        <text>可能追问 & 应对</text>
+      </view>
+      <view class="card-content">{{result.followup}}</view>
+    </view>
+
+    <!-- 底部操作 -->
+    <view class="bottom-action">
+      <button class="btn-primary" bindtap="onRegenerate">再生成一个</button>
+      <button class="btn-secondary" open-type="share">分享给朋友</button>
+    </view>
+  </block>
+</view>
