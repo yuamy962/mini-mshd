@@ -160,8 +160,24 @@
     <text class="modal-close" bindtap="onCloseShareModal">✕</text>
   </view>
   <view class="modal-body">
-    <canvas canvas-id="shareCanvas" style="width: 750rpx; height: 1100rpx; margin: 0 auto; display: block;"></canvas>
-    <image wx:if="{{shareImagePath}}" src="{{shareImagePath}}" mode="widthFix" style="width: 750rpx; height: 1100rpx; display: block; margin: 0 auto; border-radius: 16rpx; box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.15);" />
+    <!-- 绘制时显示 canvas，生成图片后隐藏 -->
+    <view
+      class="canvas-wrap"
+      style="width: {{750 * canvasScale}}px; height: {{1100 * canvasScale}}px;"
+      hidden="{{shareImagePath}}"
+    >
+      <canvas
+        canvas-id="shareCanvas"
+        style="width: 750px; height: 1100px; transform: scale({{canvasScale}}); transform-origin: top left;"
+      />
+    </view>
+    <!-- 图片生成后显示图片，隐藏 canvas -->
+    <image
+      wx:if="{{shareImagePath}}"
+      src="{{shareImagePath}}"
+      mode="widthFix"
+      style="width: {{750 * canvasScale}}px; display: block; margin: 0 auto; border-radius: 16rpx; box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.15);"
+    />
   </view>
   <view class="modal-footer">
     <button class="btn-save" bindtap="onSaveShareImage" disabled="{{!shareImagePath}}">

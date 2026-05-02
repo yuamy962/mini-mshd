@@ -92,7 +92,9 @@ mini-mshd/
 │   └── app.wxss
 └── docs/
     ├── req.md                    # 需求文档
-    └── dev-log.md                # 开发记录（本文件）
+    ├── dev-log.md                # 开发记录
+    ├── test-checklist.md         # 功能测试清单
+    └── troubleshooting.md        # 问题库与部署指南（v1.2 新增）
 ```
 
 ### 3.2 数据库集合

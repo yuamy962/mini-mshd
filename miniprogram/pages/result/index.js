@@ -11,6 +11,7 @@ Page({
     showShareModal: false,
     shareImagePath: '',
     canvasReady: false,
+    canvasScale: 0.5,
     // 付费解锁
     showUnlockModal: false,
     unlockType: '', // 'advanced' | 'followup'
@@ -19,7 +20,17 @@ Page({
   },
 
   onLoad(options) {
-    const { role, question, background, fromHistory, resultData } = options;
+    let { role, question, background, fromHistory, resultData } = options;
+
+    // 小程序 URL 参数不会自动 decode，必须手动解码
+    try {
+      role = role ? decodeURIComponent(role) : '';
+      question = question ? decodeURIComponent(question) : '';
+      background = background ? decodeURIComponent(background) : '';
+    } catch (e) {
+      console.error('URL 参数解码失败', e);
+    }
+
     this.setData({ role, question, fromHistory: !!fromHistory });
 
     // 从历史记录进入，直接展示缓存的结果
@@ -148,7 +159,15 @@ Page({
 
   // ========== 分享卡片 ==========
   onShowShareModal() {
-    this.setData({ showShareModal: true });
+    // 计算 Canvas 缩放比例，适配不同屏幕宽度
+    const sysInfo = wx.getSystemInfoSync();
+    const screenWidth = sysInfo.windowWidth;
+    const canvasScale = (screenWidth - 40) / 750; // 左右各留 20px 边距
+
+    this.setData({
+      showShareModal: true,
+      canvasScale: Math.max(0.4, Math.min(canvasScale, 1)), // 限制在 0.4 ~ 1.0 之间
+    });
     this.drawShareCard();
   },
 
@@ -165,6 +184,9 @@ Page({
     const W = 750;
     const H = 1100;
 
+    // 清空画布
+    ctx.clearRect(0, 0, W, H);
+
     // 背景
     const grd = ctx.createLinearGradient(0, 0, 0, H);
     grd.addColorStop(0, '#ffffff');
@@ -176,15 +198,15 @@ Page({
     ctx.setFillStyle('#07c160');
     ctx.fillRect(0, 0, W, 16);
 
-    // 标题
+    // 标题（去掉 emoji，避免某些基础库 canvas 不支持 emoji 渲染）
     ctx.setFillStyle('#333');
-    ctx.setFontSize(48);
+    ctx.setFontSize(44);
     ctx.setTextAlign('center');
-    ctx.fillText('🔥 HR会点头的回答', W / 2, 100);
+    ctx.fillText('HR会点头的回答', W / 2, 100);
 
     // 副标题
     ctx.setFillStyle('#999');
-    ctx.setFontSize(28);
+    ctx.setFontSize(26);
     ctx.fillText('建议直接背诵，面试时用得上', W / 2, 150);
 
     // 分隔线
@@ -197,57 +219,57 @@ Page({
 
     // 岗位标签
     ctx.setFillStyle('#e8f5e9');
-    ctx.fillRect(60, 210, 140, 52);
+    ctx.fillRect(60, 210, 160, 52);
     ctx.setFillStyle('#2e7d32');
     ctx.setFontSize(26);
     ctx.setTextAlign('center');
-    ctx.fillText(role, 130, 244);
+    ctx.fillText(role || '未知岗位', 140, 244);
 
     // 问题
     ctx.setFillStyle('#333');
-    ctx.setFontSize(32);
+    ctx.setFontSize(30);
     ctx.setTextAlign('left');
-    this.drawWrapText(ctx, question, 60, 310, W - 120, 48, 2);
+    this.drawWrapText(ctx, question || '面试问题', 60, 300, W - 120, 46, 2);
 
     // 回答内容区域背景
     ctx.setFillStyle('#f8f9fa');
-    ctx.fillRect(60, 400, W - 120, 320);
+    ctx.fillRect(60, 390, W - 120, 300);
 
     // 回答内容
     ctx.setFillStyle('#444');
-    ctx.setFontSize(30);
-    const answerText = result.answer ? result.answer.substring(0, 120) + (result.answer.length > 120 ? '...' : '') : '';
-    this.drawWrapText(ctx, answerText, 90, 460, W - 180, 48, 5);
+    ctx.setFontSize(28);
+    const answerText = result.answer ? result.answer.substring(0, 100) + (result.answer.length > 100 ? '...' : '') : '';
+    this.drawWrapText(ctx, answerText, 90, 440, W - 180, 44, 5);
 
     // 评分展示
     if (result.score && result.score.total) {
       const scoreX = W / 2;
-      const scoreY = 800;
+      const scoreY = 780;
 
       // 圆形背景
       ctx.beginPath();
-      ctx.arc(scoreX, scoreY, 80, 0, 2 * Math.PI);
+      ctx.arc(scoreX, scoreY, 70, 0, 2 * Math.PI);
       ctx.setFillStyle('#fff3e0');
       ctx.fill();
 
       // 分数
       ctx.setFillStyle('#e65100');
-      ctx.setFontSize(72);
+      ctx.setFontSize(64);
       ctx.setTextAlign('center');
-      ctx.fillText(String(result.score.total), scoreX, scoreY + 20);
+      ctx.fillText(String(result.score.total), scoreX, scoreY + 18);
 
-      ctx.setFontSize(26);
-      ctx.fillText('分', scoreX + 50, scoreY - 10);
+      ctx.setFontSize(24);
+      ctx.fillText('分', scoreX + 42, scoreY - 6);
 
       // 评分标签
       ctx.setFillStyle('#666');
-      ctx.setFontSize(28);
-      ctx.fillText('回答质量评分', scoreX, scoreY + 110);
+      ctx.setFontSize(26);
+      ctx.fillText('回答质量评分', scoreX, scoreY + 100);
     }
 
     // 底部提示
     ctx.setFillStyle('#bbb');
-    ctx.setFontSize(24);
+    ctx.setFontSize(22);
     ctx.setTextAlign('center');
     ctx.fillText('扫码使用「面试回答生成器」，3分钟搞定面试难题', W / 2, H - 80);
 
@@ -255,31 +277,28 @@ Page({
     ctx.setFillStyle('#07c160');
     ctx.fillRect(0, H - 16, W, 16);
 
-    ctx.draw(false, () => {
-      setTimeout(() => {
-        wx.canvasToTempFilePath({
-          canvasId: 'shareCanvas',
-          width: W,
-          height: H,
-          destWidth: W * 2,
-          destHeight: H * 2,
-          success: (res) => {
-            this.setData({
-              shareImagePath: res.tempFilePath,
-              canvasReady: true,
-            });
-          },
-          fail: (err) => {
-            console.error('生成图片失败', err);
-            wx.showToast({ title: '生成失败', icon: 'none' });
-          },
-        });
-      }, 300);
-    });
+    // 旧版 canvas draw 不支持回调，用 setTimeout 确保绘制完成
+    ctx.draw();
+    setTimeout(() => {
+      wx.canvasToTempFilePath({
+        canvasId: 'shareCanvas',
+        success: (res) => {
+          this.setData({
+            shareImagePath: res.tempFilePath,
+            canvasReady: true,
+          });
+        },
+        fail: (err) => {
+          console.error('生成图片失败', err);
+          wx.showToast({ title: '生成失败', icon: 'none' });
+        },
+      });
+    }, 500);
   },
 
-  // Canvas 多行文本绘制工具
+  // Canvas 多行文本绘制工具（修复版）
   drawWrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+    if (!text) return;
     const chars = text.split('');
     let line = '';
     let lineCount = 0;
@@ -289,7 +308,7 @@ Page({
       const metrics = ctx.measureText(testLine);
       if (metrics.width > maxWidth && line !== '') {
         lineCount++;
-        if (maxLines && lineCount > maxLines) {
+        if (maxLines && lineCount >= maxLines) {
           ctx.fillText(line.substring(0, line.length - 1) + '...', x, y);
           return;
         }

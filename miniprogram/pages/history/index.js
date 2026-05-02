@@ -1,3 +1,13 @@
+// 安全解码 URL 编码的字符串
+function safeDecode(str) {
+  if (!str || typeof str !== 'string') return str || '';
+  try {
+    return decodeURIComponent(str);
+  } catch (e) {
+    return str;
+  }
+}
+
 Page({
   data: {
     loading: false,
@@ -34,7 +44,14 @@ Page({
 
       const { code, data } = res.result;
       if (code === 0) {
-        const newList = this.data.page === 1 ? data.list : [...this.data.list, ...data.list];
+        // 对 role 和 question 做安全解码（兼容旧数据中的 URL 编码）
+        const decodedList = data.list.map(item => ({
+          ...item,
+          role: safeDecode(item.role),
+          question: safeDecode(item.question),
+          background: safeDecode(item.background),
+        }));
+        const newList = this.data.page === 1 ? decodedList : [...this.data.list, ...decodedList];
         this.setData({
           list: newList,
           total: data.total,
