@@ -211,7 +211,10 @@
 <view class="share-modal" wx:if="{{showShareModal}}">
   <view class="modal-header">
     <text class="modal-title">生成分享卡片</text>
-    <text class="modal-close" bindtap="onCloseShareModal">✕</text>
+    <view style="display:flex;align-items:center;gap:20rpx;">
+      <text class="mode-toggle" bindtap="onToggleShareMode">{{shareMode === 'normal' ? '切换对比模式' : '切换普通模式'}}</text>
+      <text class="modal-close" bindtap="onCloseShareModal">✕</text>
+    </view>
   </view>
   <view class="modal-body">
     <!-- 绘制时显示 canvas，生成图片后隐藏 -->
@@ -238,6 +241,16 @@
       {{shareImagePath ? '保存到相册' : '生成中...'}}
     </button>
   </view>
+</view>
+
+<!-- ===== 分享引导弹窗（v1.3 P1） ===== -->
+<view class="modal-mask" wx:if="{{showShareGuide}}" bindtap="onCloseShareGuide"></view>
+<view class="share-guide-modal" wx:if="{{showShareGuide}}">
+  <view class="guide-icon">🎉</view>
+  <view class="guide-title">你的回答已超过80%求职者</view>
+  <view class="guide-desc">分享出去，看看别人怎么评价？</view>
+  <button class="btn-guide-share" bindtap="onShareNow">立即分享</button>
+  <view class="guide-close" bindtap="onCloseShareGuide">稍后再说</view>
 </view>
 
 <!-- ===== 解锁弹窗（v1.2） ===== -->

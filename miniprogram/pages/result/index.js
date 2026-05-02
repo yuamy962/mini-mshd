@@ -20,6 +20,9 @@ Page({
     // v1.3 新增
     advancedResult: null,
     showAdvancedLoading: false,
+    // v1.3 P1 新增
+    showShareGuide: false,
+    shareMode: 'normal', // 'normal' | 'compare'
   },
 
   onLoad(options) {
@@ -92,6 +95,9 @@ Page({
 
       // 尝试从本地缓存读取解锁状态
       this.loadLocalUnlockStatus(recordId);
+
+      // P1：检查是否首次生成，如果是则显示分享引导弹窗
+      this.checkFirstShare();
     } catch (e) {
       console.error('调用失败:', e);
       this.setData({
@@ -142,11 +148,51 @@ Page({
   },
 
   onRegenerate() {
-    const texts = ['换个问题再试一次', '再刷一个更好的回答'];
-    const randomText = texts[Math.floor(Math.random() * texts.length)];
     wx.redirectTo({
       url: '/pages/index/index',
     });
+  },
+
+  // ========== P1：分享引导弹窗 ==========
+  checkFirstShare() {
+    try {
+      const hasGenerated = wx.getStorageSync('hasGenerated');
+      if (!hasGenerated) {
+        // 首次生成，显示分享引导弹窗
+        setTimeout(() => {
+          this.setData({ showShareGuide: true });
+        }, 1500);
+        wx.setStorageSync('hasGenerated', '1');
+      }
+    } catch (e) {
+      console.error('检查首次生成失败', e);
+    }
+  },
+
+  onCloseShareGuide() {
+    this.setData({ showShareGuide: false });
+  },
+
+  onShareNow() {
+    this.setData({ showShareGuide: false });
+    this.onShowShareModal();
+  },
+
+  // ========== P1：对比卡片模式 ==========
+  onToggleShareMode() {
+    const newMode = this.data.shareMode === 'normal' ? 'compare' : 'normal';
+    this.setData({ shareMode: newMode, shareImagePath: '' });
+    this.drawShareCard();
+  },
+
+  getPoorAnswer(role) {
+    const map = {
+      '程序员': '我技术还行，学习能力挺强的，加班也没问题',
+      '产品经理': '我沟通能力不错，很有责任心，用户需求我都能理解',
+      '行政': '我做事很细心，办公软件都会用，性格比较稳重',
+      '应届生': '我是应届毕业生，虽然没经验但是我很努力',
+    };
+    return map[role] || '我很努力，有责任心，学习能力很强';
   },
 
   // v1.3 新增：优化到90+版本
@@ -229,7 +275,7 @@ Page({
 
   // Canvas 绘制分享卡片
   drawShareCard() {
-    const { result, question, role } = this.data;
+    const { result, question, role, shareMode } = this.data;
     if (!result) return;
 
     const ctx = wx.createCanvasContext('shareCanvas');
@@ -250,83 +296,173 @@ Page({
     ctx.setFillStyle('#07c160');
     ctx.fillRect(0, 0, W, 16);
 
-    // 标题（去掉 emoji，避免某些基础库 canvas 不支持 emoji 渲染）
-    ctx.setFillStyle('#333');
-    ctx.setFontSize(44);
-    ctx.setTextAlign('center');
-    ctx.fillText('HR会点头的回答', W / 2, 100);
-
-    // 副标题
-    ctx.setFillStyle('#999');
-    ctx.setFontSize(26);
-    ctx.fillText('建议直接背诵，面试时用得上', W / 2, 150);
-
-    // 分隔线
-    ctx.setStrokeStyle('#e8e8e8');
-    ctx.setLineWidth(2);
-    ctx.beginPath();
-    ctx.moveTo(60, 180);
-    ctx.lineTo(W - 60, 180);
-    ctx.stroke();
-
-    // 岗位标签
-    ctx.setFillStyle('#e8f5e9');
-    ctx.fillRect(60, 210, 160, 52);
-    ctx.setFillStyle('#2e7d32');
-    ctx.setFontSize(26);
-    ctx.setTextAlign('center');
-    ctx.fillText(role || '未知岗位', 140, 244);
-
-    // 问题
-    ctx.setFillStyle('#333');
-    ctx.setFontSize(30);
-    ctx.setTextAlign('left');
-    this.drawWrapText(ctx, question || '面试问题', 60, 300, W - 120, 46, 2);
-
-    // 回答内容区域背景
-    ctx.setFillStyle('#f8f9fa');
-    ctx.fillRect(60, 390, W - 120, 300);
-
-    // 回答内容
-    ctx.setFillStyle('#444');
-    ctx.setFontSize(28);
-    const answerText = result.answer ? result.answer.substring(0, 100) + (result.answer.length > 100 ? '...' : '') : '';
-    this.drawWrapText(ctx, answerText, 90, 440, W - 180, 44, 5);
-
-    // 一句话点评（v1.3）
-    if (result.summaryComment) {
-      ctx.setFillStyle('#e3f2fd');
-      ctx.fillRect(60, 720, W - 120, 60);
-      ctx.setFillStyle('#1565c0');
-      ctx.setFontSize(24);
+    if (shareMode === 'compare') {
+      // ========== 对比模式 ==========
+      // 标题
+      ctx.setFillStyle('#333');
+      ctx.setFontSize(42);
       ctx.setTextAlign('center');
-      ctx.fillText(result.summaryComment, W / 2, 758);
-    }
+      ctx.fillText('面试回答对比', W / 2, 90);
 
-    // 评分展示
-    const scoreY = result.summaryComment ? 860 : 780;
-    if (result.score && result.score.total) {
-      const scoreX = W / 2;
+      ctx.setFillStyle('#999');
+      ctx.setFontSize(24);
+      ctx.fillText('看看差回答和好回答的差距', W / 2, 130);
 
-      // 圆形背景
+      // 分隔线
+      ctx.setStrokeStyle('#e8e8e8');
+      ctx.setLineWidth(2);
       ctx.beginPath();
-      ctx.arc(scoreX, scoreY, 70, 0, 2 * Math.PI);
-      ctx.setFillStyle('#fff3e0');
-      ctx.fill();
+      ctx.moveTo(60, 155);
+      ctx.lineTo(W - 60, 155);
+      ctx.stroke();
 
-      // 分数
-      ctx.setFillStyle('#e65100');
-      ctx.setFontSize(64);
-      ctx.setTextAlign('center');
-      ctx.fillText(String(result.score.total), scoreX, scoreY + 18);
-
-      ctx.setFontSize(24);
-      ctx.fillText('分', scoreX + 42, scoreY - 6);
-
-      // 评分标签
+      // 问题
       ctx.setFillStyle('#666');
+      ctx.setFontSize(24);
+      ctx.setTextAlign('center');
+      ctx.fillText(`【${role || '未知岗位'}】${question || '面试问题'}`, W / 2, 185);
+
+      // 上半部分：差回答
+      ctx.setFillStyle('#ffebee');
+      ctx.fillRect(60, 215, W - 120, 280);
+
+      ctx.setFillStyle('#c62828');
       ctx.setFontSize(26);
-      ctx.fillText('回答质量评分', scoreX, scoreY + 100);
+      ctx.setTextAlign('left');
+      ctx.fillText('我以前这样回答：', 85, 255);
+
+      const poorAnswer = this.getPoorAnswer(role);
+      ctx.setFillStyle('#555');
+      ctx.setFontSize(26);
+      this.drawWrapText(ctx, poorAnswer, 85, 295, W - 170, 42, 3);
+
+      ctx.setFillStyle('#c62828');
+      ctx.setFontSize(22);
+      ctx.setTextAlign('center');
+      ctx.fillText('面试官无感', W / 2, 465);
+
+      // 中间分隔线
+      ctx.setStrokeStyle('#ddd');
+      ctx.setLineWidth(2);
+      ctx.setLineDash([10, 10], 0);
+      ctx.beginPath();
+      ctx.moveTo(100, 515);
+      ctx.lineTo(W - 100, 515);
+      ctx.stroke();
+      ctx.setLineDash([], 0);
+
+      // 下半部分：好回答
+      ctx.setFillStyle('#e8f5e9');
+      ctx.fillRect(60, 545, W - 120, 280);
+
+      ctx.setFillStyle('#2e7d32');
+      ctx.setFontSize(26);
+      ctx.setTextAlign('left');
+      ctx.fillText('用这个回答后：', 85, 585);
+
+      const goodAnswer = result.answer ? result.answer.substring(0, 80) + (result.answer.length > 80 ? '...' : '') : '';
+      ctx.setFillStyle('#333');
+      ctx.setFontSize(26);
+      this.drawWrapText(ctx, goodAnswer, 85, 625, W - 170, 42, 3);
+
+      // 评分
+      if (result.score && result.score.total) {
+        ctx.setFillStyle('#e65100');
+        ctx.setFontSize(28);
+        ctx.setTextAlign('center');
+        ctx.fillText(`评分：${result.score.total}分`, W / 2, 825);
+      }
+
+      ctx.setFillStyle('#2e7d32');
+      ctx.setFontSize(22);
+      ctx.setTextAlign('center');
+      ctx.fillText('面试官认可', W / 2, 855);
+
+      // 底部引导语
+      ctx.setFillStyle('#999');
+      ctx.setFontSize(24);
+      ctx.setTextAlign('center');
+      ctx.fillText('你会给这个回答打几分？', W / 2, H - 100);
+    } else {
+      // ========== 普通模式 ==========
+      // 标题
+      ctx.setFillStyle('#333');
+      ctx.setFontSize(44);
+      ctx.setTextAlign('center');
+      ctx.fillText('HR会点头的回答', W / 2, 100);
+
+      // 副标题
+      ctx.setFillStyle('#999');
+      ctx.setFontSize(26);
+      ctx.fillText('建议直接背诵，面试时用得上', W / 2, 150);
+
+      // 分隔线
+      ctx.setStrokeStyle('#e8e8e8');
+      ctx.setLineWidth(2);
+      ctx.beginPath();
+      ctx.moveTo(60, 180);
+      ctx.lineTo(W - 60, 180);
+      ctx.stroke();
+
+      // 岗位标签
+      ctx.setFillStyle('#e8f5e9');
+      ctx.fillRect(60, 210, 160, 52);
+      ctx.setFillStyle('#2e7d32');
+      ctx.setFontSize(26);
+      ctx.setTextAlign('center');
+      ctx.fillText(role || '未知岗位', 140, 244);
+
+      // 问题
+      ctx.setFillStyle('#333');
+      ctx.setFontSize(30);
+      ctx.setTextAlign('left');
+      this.drawWrapText(ctx, question || '面试问题', 60, 300, W - 120, 46, 2);
+
+      // 回答内容区域背景
+      ctx.setFillStyle('#f8f9fa');
+      ctx.fillRect(60, 390, W - 120, 300);
+
+      // 回答内容
+      ctx.setFillStyle('#444');
+      ctx.setFontSize(28);
+      const answerText = result.answer ? result.answer.substring(0, 100) + (result.answer.length > 100 ? '...' : '') : '';
+      this.drawWrapText(ctx, answerText, 90, 440, W - 180, 44, 5);
+
+      // 一句话点评（v1.3）
+      if (result.summaryComment) {
+        ctx.setFillStyle('#e3f2fd');
+        ctx.fillRect(60, 720, W - 120, 60);
+        ctx.setFillStyle('#1565c0');
+        ctx.setFontSize(24);
+        ctx.setTextAlign('center');
+        ctx.fillText(result.summaryComment, W / 2, 758);
+      }
+
+      // 评分展示
+      const scoreY = result.summaryComment ? 860 : 780;
+      if (result.score && result.score.total) {
+        const scoreX = W / 2;
+
+        // 圆形背景
+        ctx.beginPath();
+        ctx.arc(scoreX, scoreY, 70, 0, 2 * Math.PI);
+        ctx.setFillStyle('#fff3e0');
+        ctx.fill();
+
+        // 分数
+        ctx.setFillStyle('#e65100');
+        ctx.setFontSize(64);
+        ctx.setTextAlign('center');
+        ctx.fillText(String(result.score.total), scoreX, scoreY + 18);
+
+        ctx.setFontSize(24);
+        ctx.fillText('分', scoreX + 42, scoreY - 6);
+
+        // 评分标签
+        ctx.setFillStyle('#666');
+        ctx.setFontSize(26);
+        ctx.fillText('回答质量评分', scoreX, scoreY + 100);
+      }
     }
 
     // 底部提示

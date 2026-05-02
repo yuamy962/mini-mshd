@@ -479,6 +479,18 @@ page {
   padding: 10rpx;
 }
 
+.mode-toggle {
+  font-size: 26rpx;
+  color: #07c160;
+  padding: 10rpx 16rpx;
+  background: #e8f5e9;
+  border-radius: 20rpx;
+}
+
+.mode-toggle:active {
+  opacity: 0.7;
+}
+
 .modal-body {
   flex: 1;
   padding: 20rpx;
@@ -623,5 +635,69 @@ page {
 }
 
 .unlock-close:active {
+  opacity: 0.7;
+}
+
+/* ===== 分享引导弹窗（v1.3 P1） ===== */
+.share-guide-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 560rpx;
+  max-width: 85vw;
+  background: #fff;
+  border-radius: 24rpx;
+  z-index: 101;
+  padding: 50rpx 40rpx;
+  text-align: center;
+}
+
+.guide-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.guide-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.guide-desc {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 40rpx;
+}
+
+.btn-guide-share {
+  width: 100%;
+  height: 84rpx;
+  line-height: 84rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 30rpx;
+  border-radius: 42rpx;
+  text-align: center;
+  border: none;
+  margin-bottom: 20rpx;
+}
+
+.btn-guide-share::after {
+  border: none;
+}
+
+.btn-guide-share:active {
+  opacity: 0.85;
+}
+
+.guide-close {
+  font-size: 28rpx;
+  color: #999;
+  padding: 16rpx;
+}
+
+.guide-close:active {
   opacity: 0.7;
 }
