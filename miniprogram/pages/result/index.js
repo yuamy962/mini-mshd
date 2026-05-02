@@ -17,6 +17,9 @@ Page({
     unlockType: '', // 'advanced' | 'followup'
     unlockedAdvanced: false,
     unlockedFollowup: false,
+    // v1.3 新增
+    advancedResult: null,
+    showAdvancedLoading: false,
   },
 
   onLoad(options) {
@@ -84,6 +87,7 @@ Page({
         loading: false,
         result: data,
         recordId,
+        advancedResult: null,
       });
 
       // 尝试从本地缓存读取解锁状态
@@ -138,9 +142,57 @@ Page({
   },
 
   onRegenerate() {
+    const texts = ['换个问题再试一次', '再刷一个更好的回答'];
+    const randomText = texts[Math.floor(Math.random() * texts.length)];
     wx.redirectTo({
       url: '/pages/index/index',
     });
+  },
+
+  // v1.3 新增：优化到90+版本
+  async onOptimizeTo90() {
+    const { role, question, result } = this.data;
+    if (!result || !result.answer) {
+      wx.showToast({ title: '暂无原回答', icon: 'none' });
+      return;
+    }
+
+    this.setData({ showAdvancedLoading: true });
+
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'generateAnswer',
+        data: {
+          role,
+          question,
+          background: '',
+          mode: 'advanced',
+          originalAnswer: result.answer,
+        },
+      });
+
+      const { code, message, data } = res.result;
+
+      if (code !== 0) {
+        wx.showToast({ title: message || '优化失败', icon: 'none' });
+        this.setData({ showAdvancedLoading: false });
+        return;
+      }
+
+      this.setData({
+        advancedResult: data,
+        showAdvancedLoading: false,
+      });
+
+      wx.pageScrollTo({
+        selector: '.card-advanced-result',
+        duration: 300,
+      });
+    } catch (e) {
+      console.error('优化失败:', e);
+      wx.showToast({ title: '网络异常，请稍后重试', icon: 'none' });
+      this.setData({ showAdvancedLoading: false });
+    }
   },
 
   onGoHome() {
@@ -241,10 +293,20 @@ Page({
     const answerText = result.answer ? result.answer.substring(0, 100) + (result.answer.length > 100 ? '...' : '') : '';
     this.drawWrapText(ctx, answerText, 90, 440, W - 180, 44, 5);
 
+    // 一句话点评（v1.3）
+    if (result.summaryComment) {
+      ctx.setFillStyle('#e3f2fd');
+      ctx.fillRect(60, 720, W - 120, 60);
+      ctx.setFillStyle('#1565c0');
+      ctx.setFontSize(24);
+      ctx.setTextAlign('center');
+      ctx.fillText(result.summaryComment, W / 2, 758);
+    }
+
     // 评分展示
+    const scoreY = result.summaryComment ? 860 : 780;
     if (result.score && result.score.total) {
       const scoreX = W / 2;
-      const scoreY = 780;
 
       // 圆形背景
       ctx.beginPath();

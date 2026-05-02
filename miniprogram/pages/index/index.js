@@ -7,6 +7,7 @@ Page({
     quickQuestions: ['自我介绍', '优缺点', '为什么离职', '职业规划'],
     remaining: 3,
     loading: false,
+    showExhaustedModal: false,
   },
 
   onLoad() {
@@ -31,6 +32,46 @@ Page({
     } catch (e) {
       console.error('获取次数失败:', e);
     }
+  },
+
+  onCloseExhaustedModal() {
+    this.setData({ showExhaustedModal: false });
+  },
+
+  async onWatchAd() {
+    // v1.3 看广告获得3次额度（预留广告 SDK 接入点）
+    wx.showLoading({ title: '加载中...' });
+
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'quota',
+        data: { type: 'watchAd' },
+      });
+
+      wx.hideLoading();
+
+      if (res.result.code === 0) {
+        this.setData({
+          remaining: res.result.data.remaining,
+          showExhaustedModal: false,
+        });
+        wx.showToast({
+          title: `已获得${res.result.data.adBonus || 3}次额度`,
+          icon: 'success',
+        });
+      } else {
+        wx.showToast({ title: res.result.message || '操作失败', icon: 'none' });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error(e);
+      wx.showToast({ title: '网络异常', icon: 'none' });
+    }
+  },
+
+  onOpenVip() {
+    wx.showToast({ title: '会员功能即将上线', icon: 'none' });
+    this.setData({ showExhaustedModal: false });
   },
 
   onSelectRole(e) {
@@ -63,7 +104,7 @@ Page({
       return;
     }
     if (remaining <= 0) {
-      wx.showToast({ title: '今日次数已用完，明天再来~', icon: 'none' });
+      this.setData({ showExhaustedModal: true });
       return;
     }
 
@@ -76,8 +117,7 @@ Page({
       });
 
       if (checkRes.result.code !== 0 || !checkRes.result.data.canUse) {
-        this.setData({ loading: false });
-        wx.showToast({ title: '今日次数已用完', icon: 'none' });
+        this.setData({ loading: false, showExhaustedModal: true });
         return;
       }
 

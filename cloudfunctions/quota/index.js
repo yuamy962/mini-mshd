@@ -6,6 +6,7 @@ cloud.init({
 
 const db = cloud.database();
 const MAX_DAILY_QUOTA = 3;
+const AD_BONUS = 3;
 
 /**
  * 获取用户今日剩余次数
@@ -18,15 +19,21 @@ async function getQuota(openid) {
   }).get();
 
   let usedCount = 0;
+  let adBonus = 0;
   if (res.data.length > 0) {
     usedCount = res.data[0].usedCount || 0;
+    adBonus = res.data[0].adBonus || 0;
   }
 
-  const remaining = Math.max(0, MAX_DAILY_QUOTA - usedCount);
+  // 总可用次数 = 基础 3 次 + 广告奖励次数
+  const totalQuota = MAX_DAILY_QUOTA + adBonus;
+  const remaining = Math.max(0, totalQuota - usedCount);
 
   return {
     remaining,
-    total: MAX_DAILY_QUOTA,
+    total: totalQuota,
+    baseQuota: MAX_DAILY_QUOTA,
+    adBonus,
   };
 }
 
@@ -45,10 +52,10 @@ exports.main = async (event, context) => {
   const { type } = event;
 
   try {
-    // 查询剩余次数
-    const quotaInfo = await getQuota(openid);
+    const dateStr = new Date().toISOString().slice(0, 10);
 
     if (type === 'get') {
+      const quotaInfo = await getQuota(openid);
       return {
         code: 0,
         message: 'success',
@@ -57,6 +64,45 @@ exports.main = async (event, context) => {
     }
 
     if (type === 'check') {
+      const quotaInfo = await getQuota(openid);
+      return {
+        code: 0,
+        message: 'success',
+        data: {
+          ...quotaInfo,
+          canUse: quotaInfo.remaining > 0,
+        },
+      };
+    }
+
+    if (type === 'watchAd') {
+      // 用户看广告，增加 3 次额度
+      const quotaRes = await db.collection('quota').where({
+        openid: openid,
+        date: dateStr,
+      }).get();
+
+      if (quotaRes.data.length > 0) {
+        await db.collection('quota').doc(quotaRes.data[0]._id).update({
+          data: {
+            adBonus: db.command.inc(AD_BONUS),
+            updateTime: db.serverDate(),
+          },
+        });
+      } else {
+        await db.collection('quota').add({
+          data: {
+            openid: openid,
+            date: dateStr,
+            usedCount: 0,
+            adBonus: AD_BONUS,
+            createTime: db.serverDate(),
+            updateTime: db.serverDate(),
+          },
+        });
+      }
+
+      const quotaInfo = await getQuota(openid);
       return {
         code: 0,
         message: 'success',

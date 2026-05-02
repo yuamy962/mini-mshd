@@ -22,6 +22,15 @@
       <view class="header-subtitle">建议直接背诵，面试时用得上</view>
     </view>
 
+    <!-- 一句话点评（v1.3 新增） -->
+    <view class="card card-comment" wx:if="{{result.summaryComment}}">
+      <view class="card-title">
+        <text class="icon">💬</text>
+        <text>一句话点评</text>
+      </view>
+      <view class="comment-content">{{result.summaryComment}}</view>
+    </view>
+
     <!-- 评分模块 -->
     <view class="card card-score" wx:if="{{result.score && result.score.total}}">
       <view class="card-title">
@@ -58,7 +67,19 @@
         </view>
       </view>
       <view class="score-suggestion" wx:if="{{result.score.suggestion}}">
-        💡 {{result.score.suggestion}}，优化后可提升到 {{result.score.target}}+ 分
+        💡 {{result.score.suggestion}}
+      </view>
+      <view class="score-target" wx:if="{{result.improvedScore || result.score.target}}">
+        <text class="target-text">当前评分：{{result.score.total}}分</text>
+        <text class="target-arrow">→</text>
+        <text class="target-text highlight">优化后：{{result.improvedScore || result.score.target}}分（更有说服力）</text>
+      </view>
+      <!-- v1.3 新增：优化到90+按钮 -->
+      <view class="optimize-area" wx:if="{{!advancedResult && !showAdvancedLoading}}">
+        <button class="btn-optimize" bindtap="onOptimizeTo90">✨ 优化到90+版本</button>
+      </view>
+      <view class="optimize-loading" wx:if="{{showAdvancedLoading}}">
+        <text>AI 正在生成高分版本，请稍候...</text>
       </view>
     </view>
 
@@ -81,6 +102,15 @@
         <text>面试官在想什么</text>
       </view>
       <view class="card-content">{{result.insight}}</view>
+    </view>
+
+    <!-- 面试雷点提醒（v1.3 新增） -->
+    <view class="card card-risk" wx:if="{{result.riskTip}}">
+      <view class="card-title">
+        <text class="icon">⚠️</text>
+        <text>面试雷点提醒</text>
+      </view>
+      <view class="risk-content">{{result.riskTip}}</view>
     </view>
 
     <!-- 高级表达（v1.2 增加锁定） -->
@@ -143,10 +173,34 @@
       </view>
     </view>
 
+    <!-- 90+ 高分优化结果（v1.3 新增） -->
+    <view class="card card-advanced-result" wx:if="{{advancedResult}}">
+      <view class="card-title">
+        <text class="icon">🏆</text>
+        <text>90+ 高分优化版本</text>
+      </view>
+      <view class="advanced-section">
+        <view class="advanced-label">高分回答</view>
+        <view class="card-content">{{advancedResult.highScoreAnswer}}</view>
+      </view>
+      <view class="advanced-section" wx:if="{{advancedResult.optimizationNote}}">
+        <view class="advanced-label">优化点说明</view>
+        <view class="card-content">{{advancedResult.optimizationNote}}</view>
+      </view>
+      <view class="advanced-section" wx:if="{{advancedResult.enhancedInsight}}">
+        <view class="advanced-label">面试官视角强化</view>
+        <view class="card-content">{{advancedResult.enhancedInsight}}</view>
+      </view>
+      <view class="advanced-section" wx:if="{{advancedResult.deepFollowup}}">
+        <view class="advanced-label">潜在追问（更深一层）</view>
+        <view class="card-content">{{advancedResult.deepFollowup}}</view>
+      </view>
+    </view>
+
     <!-- 底部操作 -->
     <view class="bottom-action">
       <button class="btn-share" bindtap="onShowShareModal">📸 生成分享卡片</button>
-      <button class="btn-primary" bindtap="onRegenerate">再生成一个</button>
+      <button class="btn-primary" bindtap="onRegenerate">{{result.recommendQuestions && result.recommendQuestions.length > 0 ? '换个问题再试一次' : '再刷一个更好的回答'}}</button>
       <button class="btn-secondary" open-type="share">分享给朋友</button>
     </view>
   </block>

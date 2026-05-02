@@ -56,9 +56,117 @@ page {
   line-height: 1.8;
 }
 
+/* 一句话点评（v1.3） */
+.card-comment {
+  border-left: 8rpx solid #2196f3;
+  background: #e3f2fd;
+}
+
+.comment-content {
+  font-size: 30rpx;
+  color: #1565c0;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
 /* 评分卡片 */
 .card-score {
   border-left: 8rpx solid #ff9500;
+}
+
+.score-target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20rpx;
+  padding: 16rpx;
+  background: #fff3e0;
+  border-radius: 12rpx;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.target-text {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.target-text.highlight {
+  color: #e65100;
+  font-weight: bold;
+}
+
+.target-arrow {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.optimize-area {
+  margin-top: 24rpx;
+  text-align: center;
+}
+
+.btn-optimize {
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  background: #ff9500;
+  color: #fff;
+  font-size: 30rpx;
+  border-radius: 40rpx;
+  text-align: center;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-optimize::after {
+  border: none;
+}
+
+.btn-optimize:active {
+  opacity: 0.85;
+}
+
+.optimize-loading {
+  margin-top: 24rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 面试雷点提醒（v1.3） */
+.card-risk {
+  border-left: 8rpx solid #ff2d55;
+  background: #fff5f7;
+}
+
+.risk-content {
+  font-size: 28rpx;
+  color: #c62828;
+  line-height: 1.6;
+}
+
+/* 90+ 高分优化结果（v1.3） */
+.card-advanced-result {
+  border-left: 8rpx solid #ffd700;
+  background: #fffde7;
+}
+
+.advanced-section {
+  margin-bottom: 24rpx;
+}
+
+.advanced-section:last-child {
+  margin-bottom: 0;
+}
+
+.advanced-label {
+  font-size: 26rpx;
+  color: #f57c00;
+  font-weight: bold;
+  margin-bottom: 12rpx;
 }
 
 .score-main {

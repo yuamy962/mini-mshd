@@ -1,12 +1,18 @@
 <view class="container">
   <!-- 顶部栏：次数 + 历史记录入口 -->
   <view class="top-bar">
-    <view class="top-tip">
+    <view class="top-tip {{remaining === 1 ? 'warning' : ''}}">
       <text class="tip-text">今日剩余：{{remaining}} 次</text>
     </view>
     <view class="history-link" bindtap="onGoHistory">
       <text>历史记录 ></text>
     </view>
+  </view>
+
+  <!-- 次数预警（v1.3 新增） -->
+  <view class="warning-banner" wx:if="{{remaining === 1}}">
+    <text class="warning-icon">⚠️</text>
+    <text class="warning-text">今日仅剩1次生成机会，请珍惜使用~</text>
   </view>
 
   <!-- 岗位选择 -->
@@ -72,4 +78,32 @@
     </button>
     <view class="sub-tip">AI 生成，真实自然，可直接使用</view>
   </view>
+</view>
+
+<!-- ===== 次数用尽弹窗（v1.3） ===== -->
+<view class="modal-mask" wx:if="{{showExhaustedModal}}" bindtap="onCloseExhaustedModal"></view>
+<view class="exhausted-modal" wx:if="{{showExhaustedModal}}">
+  <view class="exhausted-icon">😭</view>
+  <view class="exhausted-title">今日免费次数已用完</view>
+  <view class="exhausted-desc">你可以选择：</view>
+  <view class="exhausted-options">
+    <view class="exhausted-option" bindtap="onWatchAd">
+      <text class="option-icon">🎁</text>
+      <view class="option-text">
+        <view class="option-title">看一个广告</view>
+        <view class="option-sub">再获得3次生成机会</view>
+      </view>
+    </view>
+    <view class="exhausted-option" bindtap="onOpenVip">
+      <text class="option-icon">💎</text>
+      <view class="option-text">
+        <view class="option-title">开通会员</view>
+        <view class="option-sub">无限次使用</view>
+      </view>
+    </view>
+  </view>
+  <view class="exhausted-footer">
+    <text>👉 已有1000+用户用它通过面试</text>
+  </view>
+  <view class="exhausted-close" bindtap="onCloseExhaustedModal">稍后再说</view>
 </view>

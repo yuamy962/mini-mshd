@@ -9,9 +9,9 @@ const db = cloud.database();
 const MAX_DAILY_QUOTA = 3;
 
 /**
- * 构建 Prompt（v1.1 增加评分和推荐问题）
+ * 构建 Normal 模式 Prompt（v1.3 增加 summary_comment + risk_tip）
  */
-function buildPrompt(role, question, background) {
+function buildNormalPrompt(role, question, background) {
   return `你是一位资深HR和面试教练。
 
 请根据以下信息，生成一份高质量面试回答：
@@ -39,7 +39,10 @@ function buildPrompt(role, question, background) {
     "target": 92,
     "suggestion": "具体优化建议"
   },
-  "recommendQuestions": ["自我介绍", "优缺点", "职业规划"]
+  "recommendQuestions": ["自我介绍", "优缺点", "职业规划"],
+  "summary_comment": "一句话点评这个回答的优缺点，例如：这是一个逻辑清晰但略偏保守的回答",
+  "risk_tip": "面试雷点提醒，指出这个回答中容易被面试官追问或质疑的地方",
+  "improved_score": 92
 }
 
 评分规则（score）：
@@ -54,10 +57,61 @@ function buildPrompt(role, question, background) {
 - 根据岗位和问题，推荐3个最可能被追问的相关问题
 - 用中文短语，每个不超过8个字
 
+一句话点评（summary_comment）：
+- 用一句话概括这个回答的核心特点
+- 格式：这是一个"xxx但xxx"的回答
+- 字数控制在20字以内
+
+面试雷点提醒（risk_tip）：
+- 指出原回答中最容易被面试官抓住追问的点
+- 给出一句具体、 actionable 的提醒
+- 字数控制在30字以内
+
 风格：
 - 不要空话
 - 不要鸡汤
 - 要具体`;
+}
+
+/**
+ * 构建 Advanced 模式 Prompt（90+ 高分优化版本）
+ */
+function buildAdvancedPrompt(role, question, background, originalAnswer) {
+  return `你是一位有5-10年经验的面试教练，同时也是一线业务负责人（而不是HR）。
+
+请基于真实职场经验，帮候选人优化一段"更有说服力、更像真人"的高分面试回答。
+
+【岗位】：${role}
+【问题】：${question}
+【候选人背景】：${background || '未提供'}
+【原回答参考】：${originalAnswer || '未提供'}
+
+目标：生成一份能让面试官"认可你能干活"的回答，而不是空泛表达。
+
+请严格按照以下JSON格式输出，不要包含任何其他文字：
+
+{
+  "highScoreAnswer": "高分回答（90分+版本），用具体经历表达，包含STAR结构，加入数字和案例",
+  "optimizationNote": "优化点说明：指出原回答的问题，并说明为什么这样优化更好",
+  "enhancedInsight": "面试官视角强化：说明这个回答为什么会打动面试官，体现抗压/逻辑/价值",
+  "deepFollowup": "潜在追问（更深一层）：给出1个更刁钻的追问 + 高质量回答"
+}
+
+高分回答要求（highScoreAnswer）：
+- 用"具体经历"表达，而不是抽象总结
+- 必须包含：场景 + 行动 + 结果（STAR结构）
+- 尽量加入细节（数字、案例、结果变化）
+- 语气自然，像真实工作的人在讲，而不是背稿
+- 控制在1分钟口语表达长度
+
+风格要求：
+- 禁止空话（如：我很努力 / 我很负责）
+- 禁止模板化表达
+- 必须像真实经历
+
+额外要求（关键）：
+👉 如果背景信息不足，请合理补充一个"可信的场景"，但不要夸张
+👉 输出必须让人感觉"这是一个真实干过活的人说的"`;
 }
 
 /**
@@ -111,7 +165,7 @@ async function checkAndDeductQuota(openid) {
 /**
  * 保存使用记录
  */
-async function saveUsage(openid, role, question, background, result) {
+async function saveUsage(openid, role, question, background, result, mode) {
   try {
     await db.collection('usage').add({
       data: {
@@ -120,6 +174,7 @@ async function saveUsage(openid, role, question, background, result) {
         question: question,
         background: background || '',
         result: result,
+        mode: mode || 'normal',
         createTime: db.serverDate(),
       },
     });
@@ -163,7 +218,7 @@ async function callDeepSeek(prompt) {
 
 // 云函数入口
 exports.main = async (event, context) => {
-  const { role, question, background } = event;
+  const { role, question, background, mode = 'normal', originalAnswer } = event;
 
   if (!role || !question) {
     return {
@@ -192,14 +247,35 @@ exports.main = async (event, context) => {
   }
 
   try {
-    // 2. 调用 AI 生成
-    const prompt = buildPrompt(role, question, background);
+    // 2. 根据 mode 选择 Prompt 并调用 AI
+    let prompt;
+    if (mode === 'advanced') {
+      prompt = buildAdvancedPrompt(role, question, background, originalAnswer);
+    } else {
+      prompt = buildNormalPrompt(role, question, background);
+    }
+
     const aiResult = await callDeepSeek(prompt);
 
     // 3. 保存记录
-    await saveUsage(openid, role, question, background, aiResult);
+    await saveUsage(openid, role, question, background, aiResult, mode);
 
     // 4. 组装返回数据
+    if (mode === 'advanced') {
+      return {
+        code: 0,
+        message: 'success',
+        remaining: quotaResult.remaining,
+        data: {
+          highScoreAnswer: aiResult.highScoreAnswer || '',
+          optimizationNote: aiResult.optimizationNote || '',
+          enhancedInsight: aiResult.enhancedInsight || '',
+          deepFollowup: aiResult.deepFollowup || '',
+        },
+      };
+    }
+
+    // normal 模式
     const score = aiResult.score || {};
     const recommendQuestions = aiResult.recommendQuestions || [];
 
@@ -221,6 +297,9 @@ exports.main = async (event, context) => {
           suggestion: score.suggestion || '',
         },
         recommendQuestions: Array.isArray(recommendQuestions) ? recommendQuestions : [],
+        summaryComment: aiResult.summary_comment || aiResult.summaryComment || '',
+        riskTip: aiResult.risk_tip || aiResult.riskTip || '',
+        improvedScore: aiResult.improved_score || aiResult.improvedScore || score.target || 0,
       },
     };
   } catch (e) {
