@@ -1,7 +1,25 @@
 <view class="container">
   <!-- 加载中 -->
   <block wx:if="{{loading}}">
-    <view class="loading-box">
+    <view class="skeleton-box">
+      <view class="skeleton-header">
+        <view class="skeleton-title"></view>
+        <view class="skeleton-subtitle"></view>
+      </view>
+      <view class="skeleton-card">
+        <view class="skeleton-line short"></view>
+        <view class="skeleton-line"></view>
+        <view class="skeleton-line"></view>
+      </view>
+      <view class="skeleton-card">
+        <view class="skeleton-line short"></view>
+        <view class="skeleton-line"></view>
+        <view class="skeleton-line"></view>
+      </view>
+      <view class="skeleton-card">
+        <view class="skeleton-line short"></view>
+        <view class="skeleton-line"></view>
+      </view>
       <view class="loading-text">AI 正在生成回答，请稍候...</view>
     </view>
   </block>

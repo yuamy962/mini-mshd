@@ -39,7 +39,51 @@ Page({
   },
 
   async onWatchAd() {
-    // v1.3 看广告获得3次额度（预留广告 SDK 接入点）
+    /* ============================================================
+       激励视频广告接入说明（当前为模拟模式，开通流量主后启用）
+       ============================================================
+       开通条件：小程序累计独立访客（UV）≥ 1000
+       开通路径：微信公众平台 → 推广 → 流量主 → 申请开通
+       创建广告位：流量主 → 广告管理 → 新建「激励式视频」广告位
+       获取 adUnitId 后，将下方注释的代码取消注释即可
+       ============================================================ */
+
+    // ===== 真实广告模式（开通流量主后启用）=====
+    // const rewardedVideoAd = wx.createRewardedVideoAd({
+    //   adUnitId: '你的_adUnitId', // 从流量主后台获取
+    // });
+    //
+    // rewardedVideoAd.onClose(async (res) => {
+    //   if (res && res.isEnded) {
+    //     // 用户完整看完广告，调用云函数增加次数
+    //     wx.showLoading({ title: '发放奖励中...' });
+    //     try {
+    //       const result = await wx.cloud.callFunction({
+    //         name: 'quota',
+    //         data: { type: 'watchAd' },
+    //       });
+    //       wx.hideLoading();
+    //       if (result.result.code === 0) {
+    //         this.setData({
+    //           remaining: result.result.data.remaining,
+    //           showExhaustedModal: false,
+    //         });
+    //         wx.showToast({ title: '已获得3次额度', icon: 'success' });
+    //       }
+    //     } catch (e) {
+    //       wx.hideLoading();
+    //       wx.showToast({ title: '发放失败', icon: 'none' });
+    //     }
+    //   } else {
+    //     wx.showToast({ title: '需要看完广告才能获得奖励', icon: 'none' });
+    //   }
+    // });
+    //
+    // rewardedVideoAd.show().catch(() => {
+    //   rewardedVideoAd.load().then(() => rewardedVideoAd.show());
+    // });
+
+    // ===== 模拟模式（当前使用，测试/上线初期）=====
     wx.showLoading({ title: '加载中...' });
 
     try {

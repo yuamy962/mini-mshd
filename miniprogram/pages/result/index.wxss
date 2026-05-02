@@ -136,16 +136,32 @@ page {
   color: #999;
 }
 
-/* 面试雷点提醒（v1.3） */
+/* 面试雷点提醒（v1.3 P2 优化） */
 .card-risk {
   border-left: 8rpx solid #ff2d55;
-  background: #fff5f7;
+  background: linear-gradient(135deg, #fff5f7 0%, #ffebee 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-risk::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 80rpx;
+  height: 80rpx;
+  background: rgba(255, 45, 85, 0.08);
+  border-radius: 0 0 0 80rpx;
 }
 
 .risk-content {
-  font-size: 28rpx;
+  font-size: 29rpx;
   color: #c62828;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-weight: 500;
+  padding-left: 16rpx;
+  border-left: 4rpx solid rgba(255, 45, 85, 0.3);
 }
 
 /* 90+ 高分优化结果（v1.3） */
@@ -418,17 +434,72 @@ page {
   opacity: 0.85;
 }
 
-/* 加载状态 */
-.loading-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 200rpx 0;
+/* 骨架屏加载（v1.3 P2） */
+.skeleton-box {
+  padding: 30rpx;
+}
+
+.skeleton-header {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.skeleton-title {
+  width: 400rpx;
+  height: 48rpx;
+  background: #e8e8e8;
+  border-radius: 8rpx;
+  margin: 0 auto 16rpx;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-subtitle {
+  width: 300rpx;
+  height: 30rpx;
+  background: #e8e8e8;
+  border-radius: 6rpx;
+  margin: 0 auto;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+.skeleton-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.05);
+}
+
+.skeleton-line {
+  height: 32rpx;
+  background: #e8e8e8;
+  border-radius: 6rpx;
+  margin-bottom: 20rpx;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line.short {
+  width: 60%;
+}
+
+.skeleton-line:last-child {
+  margin-bottom: 0;
+}
+
+.skeleton-line:nth-child(1) { animation-delay: 0s; }
+.skeleton-line:nth-child(2) { animation-delay: 0.15s; }
+.skeleton-line:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes skeleton-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 .loading-text {
-  margin-top: 30rpx;
+  text-align: center;
+  margin-top: 40rpx;
   font-size: 28rpx;
   color: #999;
 }
