@@ -324,65 +324,65 @@ Page({
 
       // 上半部分：差回答
       ctx.setFillStyle('#ffebee');
-      ctx.fillRect(60, 215, W - 120, 280);
+      ctx.fillRect(60, 190, W - 120, 190);
 
       ctx.setFillStyle('#c62828');
       ctx.setFontSize(26);
       ctx.setTextAlign('left');
-      ctx.fillText('我以前这样回答：', 85, 255);
+      ctx.fillText('我以前这样回答：', 85, 220);
 
       const poorAnswer = this.getPoorAnswer(role);
       ctx.setFillStyle('#555');
       ctx.setFontSize(26);
-      this.drawWrapText(ctx, poorAnswer, 85, 295, W - 170, 42, 3);
+      this.drawWrapText(ctx, poorAnswer, 85, 255, W - 170, 42, 3);
 
       ctx.setFillStyle('#c62828');
       ctx.setFontSize(22);
       ctx.setTextAlign('center');
-      ctx.fillText('面试官无感', W / 2, 465);
+      ctx.fillText('面试官无感', W / 2, 365);
 
       // 中间分隔线
       ctx.setStrokeStyle('#ddd');
       ctx.setLineWidth(2);
       ctx.setLineDash([10, 10], 0);
       ctx.beginPath();
-      ctx.moveTo(100, 515);
-      ctx.lineTo(W - 100, 515);
+      ctx.moveTo(100, 410);
+      ctx.lineTo(W - 100, 410);
       ctx.stroke();
       ctx.setLineDash([], 0);
 
       // 下半部分：好回答
       ctx.setFillStyle('#e8f5e9');
-      ctx.fillRect(60, 545, W - 120, 280);
+      ctx.fillRect(60, 435, W - 120, 240);
 
       ctx.setFillStyle('#2e7d32');
       ctx.setFontSize(26);
       ctx.setTextAlign('left');
-      ctx.fillText('用这个回答后：', 85, 585);
+      ctx.fillText('用这个回答后：', 85, 465);
 
-      const goodAnswer = result.answer ? result.answer.substring(0, 80) + (result.answer.length > 80 ? '...' : '') : '';
+      const goodAnswer = result.answer ? result.answer.substring(0, 56) + (result.answer.length > 56 ? '...' : '') : '';
       ctx.setFillStyle('#333');
       ctx.setFontSize(26);
-      this.drawWrapText(ctx, goodAnswer, 85, 625, W - 170, 42, 3);
+      this.drawWrapText(ctx, goodAnswer, 85, 500, W - 170, 42, 3);
 
       // 评分
       if (result.score && result.score.total) {
         ctx.setFillStyle('#e65100');
         ctx.setFontSize(28);
         ctx.setTextAlign('center');
-        ctx.fillText(`评分：${result.score.total}分`, W / 2, 825);
+        ctx.fillText(`评分：${result.score.total}分`, W / 2, 630);
       }
 
       ctx.setFillStyle('#2e7d32');
       ctx.setFontSize(22);
       ctx.setTextAlign('center');
-      ctx.fillText('面试官认可', W / 2, 855);
+      ctx.fillText('面试官认可', W / 2, 660);
 
       // 底部引导语
       ctx.setFillStyle('#999');
       ctx.setFontSize(24);
       ctx.setTextAlign('center');
-      ctx.fillText('你会给这个回答打几分？', W / 2, H - 100);
+      ctx.fillText('你会给这个回答打几分？', W / 2, H - 120);
     } else {
       // ========== 普通模式 ==========
       // 标题
